@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id        String     @id @default(cuid())
+  content   String
+  likes     Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  scheduledFor DateTime?
+  isPublished Boolean  @default(true)
+  
+  @@index([createdAt])
+  @@index([scheduledFor])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  createdAt DateTime @default(now())
+  
+  @@unique([postId, id])
+  @@index([postId])
+}
+
+model AdminSettings {
+  id          String   @id @default(cuid())
+  activeHoursStart Int  @default(9)
+  activeHoursEnd   Int  @default(17)
+  updatedAt   DateTime @updatedAt
+}
+
+model TrendingTopic {
+  id        String   @id @default(cuid())
+  topic     String   @unique
+  count     Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([count])
+}
