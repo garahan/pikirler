@@ -26,7 +26,7 @@ model Post {
   images      String[]
   createdAt   DateTime @default(now())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: CASCADE)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   replies     Reply[]
   likes       Like[]
   scheduledId String?
@@ -38,17 +38,17 @@ model Reply {
   text      String   @db.Text
   createdAt DateTime @default(now())
   postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: CASCADE)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: CASCADE)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Like {
   id        String   @id @default(cuid())
   postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: CASCADE)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: CASCADE)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
 }
@@ -58,8 +58,8 @@ model ScheduledPost {
   text        String   @db.Text
   images      String[]
   status      String   @default("PENDING")
-  activeFrom  String?  // "08:00"
-  activeTo    String?  // "23:00"
+  activeFrom  String?
+  activeTo    String?
   intervalMin Int?
   intervalMax Int?
   lastPostedAt DateTime?
