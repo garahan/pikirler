@@ -1,49 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { gemini } from '@/lib/gemini'
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { generateReply } from '@/lib/gemini';
 
-const CRON_SECRET = process.env.CRON_SECRET
-
-export async function GET(request: NextRequest) {
-  if (request.headers.get('authorization') !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
+export async function GET() {
   try {
-    // Get recent posts
-    const recentPosts = await prisma.post.findMany({
-      where: {
-        isPublished: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 5,
-    })
+    console.log('🤖 Gemini bot cron job started...');
 
-    // Generate AI responses for posts
-    const responses = []
-    for (const post of recentPosts) {
-      try {
-        const aiResponse = await gemini.generateResponse(post.content)
-        responses.push({
-          postId: post.id,
-          response: aiResponse,
-        })
-      } catch (error) {
-        console.error('Failed to generate response for post:', post.id, error)
-      }
+    const post = await prisma.post.findFirst({
+      where: {
+        replies: { none: {} },
+        user: { isBot: false },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: { user: true },
+    });
+
+    if (!post) {
+      console.log('📭 No posts found that need replies');
+      return NextResponse.json({ message: 'No posts to reply to' });
     }
 
-    return NextResponse.json(
-      { processed: responses.length, responses },
-      { status: 200 }
-    )
+    const botUsers = await prisma.user.findMany({
+      where: { isBot: true },
+      take: 10,
+    });
+
+    if (botUsers.length === 0) {
+      console.log('❌ No bot users found.');
+      return NextResponse.json({ error: 'No bot users' }, { status: 500 });
+    }
+
+    const randomBot = botUsers[Math.floor(Math.random() * botUsers.length)];
+
+    const replyText = await generateReply(post.text);
+
+    await prisma.reply.create({
+      data: {
+        text: replyText,
+        postId: post.id,
+        userId: randomBot.id,
+      },
+    });
+
+    await prisma.botReplyLog.create({
+      data: {
+        originalPostId: post.id,
+        botUserId: randomBot.id,
+        replyText,
+      },
+    });
+
+    console.log(`✅ Replied to post ${post.id} with bot ${randomBot.username}`);
+    return NextResponse.json({ success: true, repliedTo: post.id });
   } catch (error) {
-    console.error('Gemini bot error:', error)
-    return NextResponse.json(
-      { error: 'Gemini bot failed' },
-      { status: 500 }
-    )
+    console.error('Gemini bot error:', error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
