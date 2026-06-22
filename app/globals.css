@@ -2,67 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  @apply bg-primary text-text;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-primary;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-secondary rounded;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-border;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+@layer base {
+  body {
+    @apply bg-midnight text-textMain font-sans antialiased;
+    scroll-behavior: smooth;
   }
-  to {
-    opacity: 1;
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-midnight;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-cyan/50 rounded-full;
   }
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(10px);
-    opacity: 0;
+@layer components {
+  .card {
+    @apply bg-card border border-borderGlow rounded-xl p-4 transition-all;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+  .btn-primary {
+    @apply bg-cyan text-midnight font-bold py-2 px-6 rounded-full shadow-glow hover:shadow-glow/80 transition-all active:scale-95;
   }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-in;
-}
-
-.animate-slideUp {
-  animation: slideUp 0.3s ease-out;
+  .btn-amber {
+    @apply bg-amber text-midnight font-bold py-2 px-6 rounded-full hover:shadow-lg transition-all active:scale-95;
+  }
 }
