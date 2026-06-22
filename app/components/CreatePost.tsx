@@ -1,70 +1,54 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
+import { useState } from 'react';
 
-interface CreatePostProps {
-  onPostCreated: () => void
-}
+export default function CreatePost() {
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
 
-export default function CreatePost({ onPostCreated }: CreatePostProps) {
-  const [content, setContent] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!content.trim()) {
-      setError('Please write something!')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-
+  const handleSubmit = async () => {
+    if (!text.trim()) return;
+    setLoading(true);
+    
     try {
-      const response = await fetch('/api/post', {
+      const res = await fetch('/api/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content }),
-      })
-
-      if (response.ok) {
-        setContent('')
-        onPostCreated()
-      } else {
-        setError('Failed to post')
+        body: JSON.stringify({ text }),
+      });
+      
+      if (res.ok) {
+        setText('');
+        // Hard refresh to show new post (simplistic for prototype)
+        window.location.reload();
       }
-    } catch (err) {
-      setError('Error posting')
+    } catch (error) {
+      console.error('Failed to post:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-secondary border border-border rounded-lg p-4 mb-6">
+    <div className="card mb-6 hover:border-cyan/30 transition">
       <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="What's on your mind?"
-        className="w-full bg-primary text-text border border-border rounded-lg p-3 mb-3 resize-none focus:outline-none focus:border-accent"
+        className="w-full bg-transparent border-none outline-none resize-none text-textMain placeholder-textSecondary text-lg leading-relaxed"
         rows={3}
+        placeholder="Pikiriňizi ýazyň..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
         maxLength={500}
       />
-
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-text-muted">{content.length}/500</span>
+      <div className="flex justify-between items-center mt-2">
+        <span className="text-xs text-textSecondary">{text.length}/500</span>
         <button
-          type="submit"
-          disabled={loading}
-          className="bg-accent text-primary font-bold py-2 px-6 rounded-lg hover:bg-accent/80 disabled:opacity-50 transition-opacity"
+          onClick={handleSubmit}
+          disabled={loading || !text.trim()}
+          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Posting...' : 'Post'}
+          {loading ? 'Iberilýär...' : '🚀 Paylaş'}
         </button>
       </div>
-
-      {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
-    </form>
-  )
+    </div>
+  );
 }
