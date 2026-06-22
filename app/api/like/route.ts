@@ -1,52 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { postId } = await request.json()
+    const { postId } = await req.json();
 
     if (!postId) {
-      return NextResponse.json(
-        { error: 'Post ID is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Post ID required' }, { status: 400 });
     }
 
-    // Check if like already exists
-    const existingLike = await prisma.like.findFirst({
-      where: { postId },
-    })
+    let user = await prisma.user.findUnique({
+      where: { username: 'demo_user' },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          username: 'demo_user',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo',
+        },
+      });
+    }
+
+    const existingLike = await prisma.like.findUnique({
+      where: {
+        postId_userId: {
+          postId,
+          userId: user.id,
+        },
+      },
+    });
 
     if (existingLike) {
-      // Unlike
-      await prisma.like.delete({
-        where: { id: existingLike.id },
-      })
-
-      const post = await prisma.post.update({
-        where: { id: postId },
-        data: { likes: { decrement: 1 } },
-      })
-
-      return NextResponse.json({ liked: false, post })
+      await prisma.like.delete({ where: { id: existingLike.id } });
+      return NextResponse.json({ liked: false });
     } else {
-      // Like
       await prisma.like.create({
-        data: { postId },
-      })
-
-      const post = await prisma.post.update({
-        where: { id: postId },
-        data: { likes: { increment: 1 } },
-      })
-
-      return NextResponse.json({ liked: true, post })
+        data: { postId, userId: user.id },
+      });
+      return NextResponse.json({ liked: true });
     }
   } catch (error) {
-    console.error('Like error:', error)
-    return NextResponse.json(
-      { error: 'Failed to toggle like' },
-      { status: 500 }
-    )
+    console.error('Like error:', error);
+    return NextResponse.json({ error: 'Failed to toggle like' }, { status: 500 });
   }
 }
