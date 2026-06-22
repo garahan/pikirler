@@ -101,13 +101,41 @@ export default function Composer({
               <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={pickImages} />
 
               <div className="flex items-center gap-3">
-                <div className="relative h-8 w-8">
-                  <svg viewBox="0 0 36 36" className="h-8 w-8 -rotate-90">
-                    <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
-                    <circle cx="18" cy="18" r="15" fill="none" stroke={near ? '#FFB800' : '#00E5FF'} strokeWidth="3" strokeDasharray={94.2} strokeDashoffset={94.2 * (1 - pct)} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.2s ease, stroke 0.2s ease' }} />
-                  </svg>
-                  {near && <span className="absolute inset-0 grid place-items-center text-[10px] font-bold text-urgent">{remaining}</span>}
-                </div>
+{text.length > 80 && (
+  <div className="relative h-8 w-8">
+    <svg viewBox="0 0 36 36" className="h-8 w-8 -rotate-90">
+      <circle
+        cx="18"
+        cy="18"
+        r="15"
+        fill="none"
+        stroke="rgba(255,255,255,0.08)"
+        strokeWidth="3"
+      />
+      <circle
+        cx="18"
+        cy="18"
+        r="15"
+        fill="none"
+        stroke={near ? '#FFB800' : '#00E5FF'}
+        strokeWidth="3"
+        strokeDasharray={94.2}
+        strokeDashoffset={94.2 * (1 - pct)}
+        strokeLinecap="round"
+        style={{
+          transition:
+            'stroke-dashoffset 0.2s ease, stroke 0.2s ease',
+        }}
+      />
+    </svg>
+
+    {near && (
+      <span className="absolute inset-0 grid place-items-center text-[10px] font-bold text-urgent">
+        {remaining}
+      </span>
+    )}
+  </div>
+)}
 
                 <button onClick={publish} disabled={!text.trim() || phase !== 'idle'} className="btn-primary press grid h-11 min-w-[7rem] place-items-center rounded-full px-5 disabled:opacity-40">
                   {phase === 'idle' && 'Paýlaş'}
