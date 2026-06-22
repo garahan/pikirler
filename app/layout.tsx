@@ -1,21 +1,22 @@
-import type { Metadata } from 'next'
-import './globals.css'
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Pikirler - The World of Thoughts',
-  description: 'Pikirleriň dünýäsi – Share your thoughts and ideas',
-}
+  title: 'Pikirler',
+  description: 'Pikirleriň akymy',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-primary text-text">
-        {children}
-      </body>
+    <html lang="tk" className="dark">
+      <body className={inter.className}>{children}</body>
     </html>
-  )
+  );
 }
