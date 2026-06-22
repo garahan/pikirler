@@ -29,7 +29,7 @@ model Post {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   replies     Reply[]
   likes       Like[]
-  scheduledId String?
+  scheduledId String?  @unique    // ✅ Added @unique here
   scheduled   ScheduledPost? @relation(fields: [scheduledId], references: [id])
 }
 
@@ -64,7 +64,7 @@ model ScheduledPost {
   intervalMax Int?
   lastPostedAt DateTime?
   createdAt   DateTime @default(now())
-  post        Post?
+  post        Post?    // back relation – Prisma will use the @unique on Post.scheduledId
 }
 
 model BotReplyLog {
