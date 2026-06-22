@@ -1,52 +1,31 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-
-interface TrendingTopic {
-  id: string
-  topic: string
-  count: number
+interface Topic {
+  tag: string;
+  count: number;
 }
 
-export default function TrendingTopics() {
-  const [topics, setTopics] = useState<TrendingTopic[]>([])
-
-  useEffect(() => {
-    // Fetch trending topics
-    const fetchTopics = async () => {
-      try {
-        // This would fetch from an API endpoint
-        // For now, showing placeholder
-        setTopics([
-          { id: '1', topic: '#thoughts', count: 234 },
-          { id: '2', topic: '#ideas', count: 189 },
-          { id: '3', topic: '#inspiration', count: 156 },
-          { id: '4', topic: '#creativity', count: 142 },
-          { id: '5', topic: '#wisdom', count: 98 },
-        ])
-      } catch (error) {
-        console.error('Failed to fetch trending topics:', error)
-      }
-    }
-
-    fetchTopics()
-  }, [])
+export default function TrendingTopics({ topics }: { topics: Topic[] }) {
+  if (!topics || topics.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="bg-secondary border border-border rounded-lg p-6 sticky top-4">
-      <h2 className="text-xl font-bold text-accent mb-4">Trending</h2>
-      <div className="space-y-3">
-        {topics.map((topic) => (
-          <a
-            key={topic.id}
-            href={`/search?q=${encodeURIComponent(topic.topic)}`}
-            className="block p-3 rounded-lg bg-primary hover:bg-border/50 transition-colors cursor-pointer"
+    <div className="mb-6 overflow-x-auto">
+      <div className="flex gap-3 whitespace-nowrap items-center">
+        <span className="text-amber text-sm flex items-center gap-1 font-semibold">
+          <span className="animate-breathe inline-block">🔥</span> 
+          Häzirki ýangy:
+        </span>
+        {topics.map(({ tag, count }) => (
+          <span
+            key={tag}
+            className="bg-card/50 px-3 py-1 rounded-full text-xs border border-borderGlow text-textSecondary hover:border-amber/50 hover:text-amber transition cursor-pointer"
           >
-            <p className="font-semibold text-text hover:text-accent">{topic.topic}</p>
-            <p className="text-sm text-text-muted">{topic.count} posts</p>
-          </a>
+            {tag} ({count})
+          </span>
         ))}
       </div>
     </div>
-  )
+  );
 }
