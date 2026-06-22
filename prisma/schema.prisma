@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,41 +7,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  avatar    String?
+  bio       String?  @db.Text
+  isBot     Boolean  @default(false)
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  posts     Post[]
+  replies   Reply[]
+  likes     Like[]
+}
+
 model Post {
-  id        String     @id @default(cuid())
-  content   String
-  likes     Int        @default(0)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  scheduledFor DateTime?
-  isPublished Boolean  @default(true)
-  
-  @@index([createdAt])
-  @@index([scheduledFor])
+  id          String   @id @default(cuid())
+  text        String   @db.Text
+  images      String[]
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: CASCADE)
+  replies     Reply[]
+  likes       Like[]
+  scheduledId String?
+  scheduled   ScheduledPost? @relation(fields: [scheduledId], references: [id])
+}
+
+model Reply {
+  id        String   @id @default(cuid())
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: CASCADE)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: CASCADE)
 }
 
 model Like {
   id        String   @id @default(cuid())
   postId    String
-  createdAt DateTime @default(now())
-  
-  @@unique([postId, id])
-  @@index([postId])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: CASCADE)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: CASCADE)
+
+  @@unique([postId, userId])
 }
 
-model AdminSettings {
+model ScheduledPost {
   id          String   @id @default(cuid())
-  activeHoursStart Int  @default(9)
-  activeHoursEnd   Int  @default(17)
-  updatedAt   DateTime @updatedAt
+  text        String   @db.Text
+  images      String[]
+  status      String   @default("PENDING")
+  activeFrom  String?  // "08:00"
+  activeTo    String?  // "23:00"
+  intervalMin Int?
+  intervalMax Int?
+  lastPostedAt DateTime?
+  createdAt   DateTime @default(now())
+  post        Post?
 }
 
-model TrendingTopic {
-  id        String   @id @default(cuid())
-  topic     String   @unique
-  count     Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@index([count])
+model BotReplyLog {
+  id          String   @id @default(cuid())
+  originalPostId String
+  botUserId   String
+  replyText   String   @db.Text
+  createdAt   DateTime @default(now())
 }
