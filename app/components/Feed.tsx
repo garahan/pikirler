@@ -8,18 +8,26 @@ const PAGE = 20;
 
 function Skeleton() {
   return (
-    <div className="rounded-2xl border border-edge bg-card/60 px-4 py-3.5">
-      <div className="flex items-center gap-3">
-        <div className="skeleton h-10 w-10 rounded-full" />
-        <div className="skeleton h-3.5 w-28 rounded-full" />
+    <div className="border-b border-edge px-4 py-3.5">
+      <div className="flex gap-3">
+        <div className="skeleton h-[42px] w-[42px] rounded-full" />
+        <div className="flex-1">
+          <div className="skeleton h-3.5 w-32 rounded-full" />
+          <div className="skeleton mt-2.5 h-3 w-full rounded-full" />
+          <div className="skeleton mt-2 h-3 w-3/5 rounded-full" />
+        </div>
       </div>
-      <div className="skeleton mt-3 h-3 w-full rounded-full" />
-      <div className="skeleton mt-2 h-3 w-3/4 rounded-full" />
     </div>
   );
 }
 
-export default function Feed({ refreshSignal = 0 }: { refreshSignal?: number }) {
+export default function Feed({
+  refreshSignal = 0,
+  authed = false,
+}: {
+  refreshSignal?: number;
+  authed?: boolean;
+}) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,7 +60,6 @@ export default function Feed({ refreshSignal = 0 }: { refreshSignal?: number }) 
     [cursor, loading]
   );
 
-  // initial + external refresh
   useEffect(() => {
     setDone(false);
     setCursor(null);
@@ -60,7 +67,6 @@ export default function Feed({ refreshSignal = 0 }: { refreshSignal?: number }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshSignal]);
 
-  // infinite scroll
   useEffect(() => {
     const el = sentinel.current;
     if (!el || done) return;
@@ -72,7 +78,6 @@ export default function Feed({ refreshSignal = 0 }: { refreshSignal?: number }) 
     return () => io.disconnect();
   }, [load, loading, done]);
 
-  // pull-to-refresh (touch)
   const onTouchStart = (e: React.TouchEvent) => {
     if (window.scrollY === 0) pullStart.current = e.touches[0].clientY;
   };
@@ -93,7 +98,6 @@ export default function Feed({ refreshSignal = 0 }: { refreshSignal?: number }) 
     pullStart.current = 0;
   };
 
-  // trending from loaded posts (top 10 hashtags)
   const topics: Topic[] = useMemo(() => {
     const counts = new Map<string, number>();
     posts.forEach((p) =>
@@ -102,10 +106,7 @@ export default function Feed({ refreshSignal = 0 }: { refreshSignal?: number }) 
         counts.set(tag, (counts.get(tag) ?? 0) + 1);
       })
     );
-    return [...counts.entries()]
-      .map(([tag, count]) => ({ tag, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+    return [...counts.entries()].map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count).slice(0, 10);
   }, [posts]);
 
   const visible = active
@@ -114,37 +115,25 @@ export default function Feed({ refreshSignal = 0 }: { refreshSignal?: number }) 
 
   return (
     <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-      {/* pull-to-refresh indicator */}
       {(pull > 0 || refreshing) && (
-        <div
-          className="flex items-center justify-center text-glow"
-          style={{ height: refreshing ? 44 : pull }}
-        >
+        <div className="flex items-center justify-center text-glow" style={{ height: refreshing ? 44 : pull }}>
           <span className={refreshing || pull > 56 ? 'animate-radar' : ''}>📡</span>
         </div>
       )}
 
       <TrendingTopics topics={topics} active={active} onSelect={setActive} />
 
-      <div className="mt-3 space-y-3">
+      <div>
         {visible.map((p, i) => (
-          <PostCard key={p.id} post={p} index={i} />
+          <PostCard key={p.id} post={p} index={i} authed={authed} />
         ))}
 
-        {loading && posts.length === 0 && (
-          <>
-            <Skeleton />
-            <Skeleton />
-            <Skeleton />
-          </>
-        )}
+        {loading && posts.length === 0 && (<><Skeleton /><Skeleton /><Skeleton /></>)}
 
         {!loading && visible.length === 0 && (
           <div className="py-20 text-center">
             <p className="text-4xl">💭</p>
-            <p className="mt-3 font-semibold text-ink">
-              {active ? `#${active} barada heniz pikir ýok` : 'Heniz pikir ýok'}
-            </p>
+            <p className="mt-3 font-semibold text-ink">{active ? `#${active} barada heniz pikir ýok` : 'Heniz pikir ýok'}</p>
             <p className="mt-1 text-sm text-muted">Ilkinji bolup pikiriňi paýlaş.</p>
           </div>
         )}
@@ -152,14 +141,9 @@ export default function Feed({ refreshSignal = 0 }: { refreshSignal?: number }) 
         <div ref={sentinel} className="h-px" />
 
         {loading && posts.length > 0 && !done && (
-          <div className="py-4 text-center text-sm text-muted">
-            <span className="animate-radar inline-block">⚡</span>
-          </div>
+          <div className="py-4 text-center text-sm text-muted"><span className="animate-radar inline-block">⚡</span></div>
         )}
-
-        {done && visible.length > 0 && (
-          <p className="py-6 text-center text-xs text-muted">Hemmesini gördüň ✦</p>
-        )}
+        {done && visible.length > 0 && <p className="py-6 text-center text-xs text-muted">Hemmesini gördüň ✦</p>}
       </div>
     </div>
   );

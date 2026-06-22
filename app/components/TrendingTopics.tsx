@@ -17,7 +17,7 @@ export default function TrendingTopics({
   if (!topics.length) return null;
 
   return (
-    <div className="sticky top-[57px] z-20 -mx-4 border-b border-edge bg-midnight/80 px-4 py-2.5 backdrop-blur-md">
+    <div className="sticky top-[52px] z-20 border-b border-edge bg-midnight/80 px-4 py-2.5 backdrop-blur-md">
       <div className="no-scrollbar flex items-center gap-2 overflow-x-auto">
         <span className="animate-breathe shrink-0 text-base" aria-hidden>🔥</span>
 

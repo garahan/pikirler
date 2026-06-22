@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getCurrentUser, setUidCookie } from '@/lib/user';
+import { getCurrentUser } from '@/lib/auth';
 
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
@@ -12,17 +13,17 @@ export async function GET(req: NextRequest) {
     const cursor = searchParams.get('cursor');
 
     const rows = await prisma.post.findMany({
-      take: take + 1, // fetch one extra to know if there's a next page
+      take: take + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       orderBy: { createdAt: 'desc' },
       include: {
-        user: { select: { username: true, avatar: true, isBot: true, isAdmin: true } },
+        user: { select: { username: true, displayName: true, avatar: true, isBot: true, isAdmin: true } },
         _count: { select: { likes: true, replies: true } },
-        likes: { where: { userId: me.id }, select: { id: true } },
+        likes: me ? { where: { userId: me.id }, select: { id: true } } : false,
         replies: {
           take: 3,
           orderBy: { createdAt: 'desc' },
-          include: { user: { select: { username: true } } },
+          include: { user: { select: { username: true, displayName: true } } },
         },
       },
     });
@@ -35,22 +36,24 @@ export async function GET(req: NextRequest) {
       text: p.text,
       images: p.images,
       createdAt: p.createdAt.toISOString(),
-      user: p.user,
+      user: {
+        username: p.user.username,
+        displayName: p.user.displayName || p.user.username,
+        avatar: p.user.avatar,
+        isBot: p.user.isBot,
+        isAdmin: p.user.isAdmin,
+      },
       likeCount: p._count.likes,
       replyCount: p._count.replies,
-      likedByMe: p.likes.length > 0,
+      likedByMe: Array.isArray((p as { likes?: unknown[] }).likes) ? (p as { likes: unknown[] }).likes.length > 0 : false,
       replies: p.replies.map((r) => ({
         id: r.id,
         text: r.text,
-        user: { username: r.user.username },
+        user: { username: r.user.username, displayName: r.user.displayName || r.user.username },
       })),
     }));
 
-    const res = NextResponse.json({
-      posts,
-      nextCursor: hasMore ? slice[slice.length - 1].id : null,
-    });
-    return setUidCookie(res, me.id);
+    return NextResponse.json({ posts, nextCursor: hasMore ? slice[slice.length - 1].id : null });
   } catch (err) {
     console.error('[feed] error', err);
     return NextResponse.json({ posts: [], nextCursor: null, error: 'feed_failed' }, { status: 500 });

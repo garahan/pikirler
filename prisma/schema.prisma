@@ -8,13 +8,15 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  avatar    String?
-  bio       String?  @db.Text
-  isBot     Boolean  @default(false)
-  isAdmin   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  username     String   @unique
+  displayName  String?
+  passwordHash String?
+  avatar       String?
+  bio          String?  @db.Text
+  isBot        Boolean  @default(false)
+  isAdmin      Boolean  @default(false)
+  createdAt    DateTime @default(now())
   posts     Post[]
   replies   Reply[]
   likes     Like[]
