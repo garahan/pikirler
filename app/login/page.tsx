@@ -116,5 +116,3 @@ export default function LoginPage() {
     </main>
   );
 }
-EOF
-echo "login page written"
