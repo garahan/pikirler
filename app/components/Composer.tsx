@@ -109,7 +109,7 @@ export default function Composer({
                   {near && <span className="absolute inset-0 grid place-items-center text-[10px] font-bold text-urgent">{remaining}</span>}
                 </div>
 
-                <button onClick={publish} disabled={!text.trim() || phase !== 'idle'} className="press grid h-11 min-w-[7rem] place-items-center rounded-full bg-glow px-5 font-semibold text-midnight shadow-glowSoft disabled:opacity-40">
+                <button onClick={publish} disabled={!text.trim() || phase !== 'idle'} className="btn-primary press grid h-11 min-w-[7rem] place-items-center rounded-full px-5 disabled:opacity-40">
                   {phase === 'idle' && 'Paýlaş'}
                   {phase === 'sending' && <span className="animate-ringSpin block h-5 w-5 rounded-full border-2 border-midnight/30 border-t-midnight" />}
                   {phase === 'done' && <span className="animate-checkPop text-xl">✓</span>}

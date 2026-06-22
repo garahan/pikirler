@@ -14,12 +14,18 @@ model User {
   passwordHash String?
   avatar       String?
   bio          String?  @db.Text
+  location     String?
+  website      String?
   isBot        Boolean  @default(false)
   isAdmin      Boolean  @default(false)
   createdAt    DateTime @default(now())
-  posts     Post[]
-  replies   Reply[]
-  likes     Like[]
+  posts        Post[]
+  replies      Reply[]
+  likes        Like[]
+  saves        Save[]
+  reposts      Repost[]
+  following    Follow[] @relation("follower")
+  followers    Follow[] @relation("following")
 }
 
 model Post {
@@ -31,6 +37,8 @@ model Post {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   replies     Reply[]
   likes       Like[]
+  saves       Save[]
+  reposts     Repost[]
   scheduledId String?  @unique
   scheduled   ScheduledPost? @relation(fields: [scheduledId], references: [id])
 
@@ -59,6 +67,42 @@ model Like {
 
   @@unique([postId, userId])
   @@index([postId])
+}
+
+model Save {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model Repost {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
 }
 
 model ScheduledPost {

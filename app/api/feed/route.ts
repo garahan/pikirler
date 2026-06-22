@@ -18,11 +18,12 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
       include: {
         user: { select: { username: true, displayName: true, avatar: true, isBot: true, isAdmin: true } },
-        _count: { select: { likes: true, replies: true } },
+        _count: { select: { likes: true, replies: true, reposts: true } },
         likes: me ? { where: { userId: me.id }, select: { id: true } } : false,
+        saves: me ? { where: { userId: me.id }, select: { id: true } } : false,
+        reposts: me ? { where: { userId: me.id }, select: { id: true } } : false,
         replies: {
-          take: 3,
-          orderBy: { createdAt: 'desc' },
+          take: 3, orderBy: { createdAt: 'desc' },
           include: { user: { select: { username: true, displayName: true } } },
         },
       },
@@ -31,7 +32,8 @@ export async function GET(req: NextRequest) {
     const hasMore = rows.length > take;
     const slice = hasMore ? rows.slice(0, take) : rows;
 
-    const posts = slice.map((p) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const posts = slice.map((p: any) => ({
       id: p.id,
       text: p.text,
       images: p.images,
@@ -45,10 +47,12 @@ export async function GET(req: NextRequest) {
       },
       likeCount: p._count.likes,
       replyCount: p._count.replies,
-      likedByMe: Array.isArray((p as { likes?: unknown[] }).likes) ? (p as { likes: unknown[] }).likes.length > 0 : false,
-      replies: p.replies.map((r) => ({
-        id: r.id,
-        text: r.text,
+      repostCount: p._count.reposts,
+      likedByMe: Array.isArray(p.likes) && p.likes.length > 0,
+      savedByMe: Array.isArray(p.saves) && p.saves.length > 0,
+      repostedByMe: Array.isArray(p.reposts) && p.reposts.length > 0,
+      replies: p.replies.map((r: { id: string; text: string; user: { username: string; displayName: string | null } }) => ({
+        id: r.id, text: r.text,
         user: { username: r.user.username, displayName: r.user.displayName || r.user.username },
       })),
     }));
