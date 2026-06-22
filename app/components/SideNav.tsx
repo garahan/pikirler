@@ -64,9 +64,25 @@ export default function SideNav({ user, onNewThread, onLogout }: { user: PublicU
         <button onClick={() => router.push('/search')} className={`press p-2 ${active('/search') ? 'text-ink' : 'text-muted'}`}><Search size={26} /></button>
         <button onClick={onNewThread} className="press grid h-11 w-11 place-items-center rounded-2xl btn-grad shadow-glowSoft"><Compose size={24} /></button>
         <button onClick={() => router.push('/activity')} className={`press p-2 ${active('/activity') ? 'text-ink' : 'text-muted'}`}><Activity size={26} /></button>
-        <button onClick={() => router.push(profileHref)} className={`press p-2 ${active('/u/') ? 'text-ink' : 'text-muted'}`}>
-          {user ? <span className="ring-grad"><Image src={user.avatar || fb(user.username)} alt="" width={26} height={26} className="h-[26px] w-[26px] rounded-full bg-card" unoptimized /></span> : <Profile size={26} />}
-        </button>
+<button
+  onClick={() => router.push(profileHref)}
+  className={`press p-2 ${active('/u/') ? 'text-ink' : 'text-muted'}`}
+>
+  {user ? (
+    <span className="ring-grad">
+      <Image
+        src={user.avatar || fb(user.username)}
+        alt=""
+        width={26}
+        height={26}
+        className="h-[26px] w-[26px] rounded-full bg-card"
+        unoptimized
+      />
+    </span>
+  ) : (
+    <Profile size={26} />
+  )}
+</button>
       </nav>
     </>
   );
