@@ -1,9 +1,9 @@
 // First deployment trigger
 import { prisma } from '@/lib/db';
 import { redis } from '@/lib/redis';
-import Feed from '@/components/Feed';
-import CreatePost from '@/components/CreatePost';
-import TrendingTopics from '@/components/TrendingTopics';
+import Feed from '@/app/components/Feed';
+import CreatePost from '@/app/components/CreatePost';
+import TrendingTopics from '@/app/components/TrendingTopics';
 
 // Revalidate every 60 seconds (ISR)
 export const revalidate = 60;
