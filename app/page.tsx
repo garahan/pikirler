@@ -1,104 +1,29 @@
-// First deployment trigger
-import { prisma } from '@/lib/db';
-import { redis } from '@/lib/redis';
-import Feed from '@/app/components/Feed';
-import CreatePost from '@/app/components/CreatePost';
-import TrendingTopics from '@/app/components/TrendingTopics';
+'use client';
 
-// Revalidate every 60 seconds (ISR)
-export const revalidate = 60;
+import { useState } from 'react';
+import Feed from './components/Feed';
+import CreatePost from './components/CreatePost';
 
-export default async function Home() {
-  // 1. Get cached post IDs from Redis
-  let postIds: string[] = await redis.lrange('global_feed', 0, 99);
-  
-  // 2. If Redis is empty, fallback to database
-  if (!postIds || postIds.length === 0) {
-    const latest = await prisma.post.findMany({
-      take: 50,
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    });
-    postIds = latest.map((p) => p.id);
-    
-    // Re-populate Redis cache
-    if (postIds.length > 0) {
-      await redis.lpush('global_feed', ...postIds);
-      await redis.ltrim('global_feed', 0, 999);
-    }
-  }
-
-  // 3. Fetch full posts with relations (users, replies, likes)
-  const posts = await prisma.post.findMany({
-    where: { id: { in: postIds.length > 0 ? postIds : ['no-posts'] } },
-    include: {
-      user: {
-        select: { username: true, avatar: true, isBot: true },
-      },
-      replies: {
-        include: {
-          user: { select: { username: true } },
-        },
-        take: 3,
-        orderBy: { createdAt: 'asc' },
-      },
-      likes: {
-        select: { id: true },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  // 4. Extract trending hashtags (Hot Topics)
-  const recentPosts = await prisma.post.findMany({
-    take: 100,
-    orderBy: { createdAt: 'desc' },
-    select: { text: true },
-  });
-
-  const hashtagMap = new Map<string, number>();
-  recentPosts.forEach((p) => {
-    const tags = p.text.match(/#[\wçäýöşüňž]+/gi) || [];
-    tags.forEach((tag) => {
-      const key = tag.toLowerCase();
-      hashtagMap.set(key, (hashtagMap.get(key) || 0) + 1);
-    });
-  });
-
-  const trending = Array.from(hashtagMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([tag, count]) => ({ tag, count }));
-
-  // 5. Sort posts to match Redis order (newest first)
-  const sortedPosts = posts.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+export default function Home() {
+  const [refresh, setRefresh] = useState(0);
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6">
-      {/* Header */}
-      <header className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-cyan tracking-tight">Pikirler</h1>
-          <p className="text-textSecondary text-sm">Pikirleriň akymy</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-amber text-xl animate-breathe">🔥</span>
-          <button className="text-textSecondary hover:text-cyan transition text-sm">
-            👤
-          </button>
-        </div>
+    <main className="mx-auto min-h-screen max-w-xl px-4 pb-28">
+      {/* header */}
+      <header className="sticky top-0 z-30 -mx-4 flex items-center justify-between border-b border-edge bg-midnight/80 px-4 py-3 backdrop-blur-md">
+        <h1 className="brand text-2xl">Pikirler</h1>
+        <button
+          onClick={() => setRefresh((n) => n + 1)}
+          className="press text-lg text-muted hover:text-glow"
+          aria-label="Täzele"
+        >
+          ↻
+        </button>
       </header>
 
-      {/* Create Post */}
-      <CreatePost />
+      <Feed refreshSignal={refresh} />
 
-      {/* Trending Topics */}
-      <TrendingTopics topics={trending} />
-
-      {/* Feed */}
-      <Feed initialPosts={sortedPosts} />
+      <CreatePost onPosted={() => setRefresh((n) => n + 1)} />
     </main>
   );
 }
