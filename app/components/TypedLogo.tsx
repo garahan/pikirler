@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 
-const WORDS = ['PIKIRLER', 'OÝLANMA', 'PIKIRLER', 'DÜŞÜNJE', 'PIKIRLER'];
+const WORDS = ['PAÝHAS', 'OÝLANMA', 'IDEÝALAR', 'YLHAM', 'DÜŞÜNJE', 'PIKIRLER'];
 
 export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagline?: string }) {
   const [display, setDisplay] = useState('');
