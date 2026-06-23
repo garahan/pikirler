@@ -2,25 +2,23 @@
 
 import { useEffect, useState, useRef } from 'react';
 
-const WORDS = ['PAÝHAS', 'OÝLANMA', 'IDEÝALAR', 'YLHAM', 'DÜŞÜNJE', 'PIKIRLER'];
+// Removed 'DÜŞÜNJE'
+const WORDS = ['PAÝHAS', 'OÝLANMA', 'IDEÝALAR', 'YLHAM', 'PIKIRLER'];
 
 export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagline?: string }) {
   const [display, setDisplay] = useState('');
   const [done, setDone] = useState(false);
   const [cursor, setCursor] = useState(true);
   
-  // New states for the advanced effects
-  const [isHighlighted, setIsHighlighted] = useState(false);
+  // Kept Glitch and Restart logic, removed Highlight logic
   const [isGlitching, setIsGlitching] = useState(false);
   const [playCount, setPlayCount] = useState(0); 
   
   const cancelled = useRef(false);
 
   useEffect(() => {
-    // Reset everything on mount / restart
     cancelled.current = false;
     setDone(false);
-    setIsHighlighted(false);
     setIsGlitching(false);
     setDisplay('');
 
@@ -28,11 +26,14 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
     const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
     const typeWord = async (word: string, deleteAfter: boolean) => {
-      // Type out the word
+      // 1. Typing out the word with human-like variable speed
       for (let i = 1; i <= word.length; i++) {
         if (cancelled.current) return;
         setDisplay(word.slice(0, i));
-        await sleep(100);
+        
+        // Calculate a random speed between 60ms and 140ms
+        const randomTypingSpeed = Math.floor(Math.random() * 80) + 60;
+        await sleep(randomTypingSpeed);
       }
 
       // If it's the final word, apply glitch effect and stop
@@ -45,17 +46,19 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
         return;
       }
 
-      await sleep(600); // Pause so the user can read the word
+      // Wait a moment so the user can read the completed word
+      await sleep(800); 
       if (cancelled.current) return;
 
-      // Effect 2: Highlight & Erase instead of backspacing
-      setIsHighlighted(true);
-      await sleep(250); // Hold the highlight momentarily
-
-      if (cancelled.current) return;
-      setIsHighlighted(false);
-      setDisplay(''); // Instantly clear
-      await sleep(350); // Pause before typing the next word
+      // 2. Backspacing the word
+      for (let i = word.length - 1; i >= 0; i--) {
+        if (cancelled.current) return;
+        setDisplay(word.slice(0, i));
+        await sleep(40); // Fast, consistent backspacing
+      }
+      
+      // Brief pause before starting the next word
+      await sleep(350); 
     };
 
     const run = async () => {
@@ -69,23 +72,20 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
 
     run();
     return () => { cancelled.current = true; };
-  }, [playCount]); // Re-run effect when playCount increases
+  }, [playCount]);
 
-  // Cursor blink logic
   useEffect(() => {
     if (done) return;
     const id = setInterval(() => setCursor((c) => !c), 500);
     return () => clearInterval(id);
   }, [done]);
 
-  // Effect 6: Interactive Restart
   const handleRestart = () => {
     if (done) setPlayCount((prev) => prev + 1);
   };
 
   return (
     <div className="text-center flex flex-col items-center">
-      {/* Embedded Styles for Animations */}
       <style>{`
         @keyframes textShine {
           to { background-position: 200% center; }
@@ -117,10 +117,9 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
           done ? 'cursor-pointer hover-physics' : ''
         }`}
       >
-        {/* Screen reader text */}
         <span className="sr-only">{WORDS[WORDS.length - 1]}</span>
 
-        {/* Effect 3: The Aura (Background Glow) */}
+        {/* The Aura Glow */}
         <span
           aria-hidden="true"
           className="absolute inset-0 z-0 pointer-events-none select-none"
@@ -130,11 +129,11 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
             fontSize: '2rem',
             background: 'linear-gradient(110deg, #00E5FF, #7af9ff 35%, #A78BFA 85%)',
             backgroundSize: '200% auto',
-            animation: 'textShine 4s linear infinite', // Effect 1
+            animation: 'textShine 4s linear infinite',
             WebkitBackgroundClip: 'text',
             color: 'transparent',
             filter: 'blur(16px)',
-            opacity: done ? 0.5 : 0.2, // Aura brightens when done
+            opacity: done ? 0.5 : 0.2,
             transition: 'opacity 0.6s ease',
           }}
         >
@@ -151,25 +150,13 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
             fontSize: '2rem',
             minWidth: display.length ? undefined : '1ch',
             display: 'inline-block',
-            padding: '0 4px', // Space for the highlight box
-            margin: '0 -4px',
-            borderRadius: '4px',
-            // Toggle styles for Highlight & Erase
-            ...(isHighlighted
-              ? {
-                  background: 'rgba(0, 229, 255, 0.3)',
-                  color: '#fff',
-                  WebkitTextFillColor: '#fff',
-                }
-              : {
-                  background: 'linear-gradient(110deg, #00E5FF, #7af9ff 35%, #A78BFA 85%)',
-                  backgroundSize: '200% auto',
-                  animation: 'textShine 4s linear infinite', // Effect 1
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  color: 'transparent',
-                }),
+            background: 'linear-gradient(110deg, #00E5FF, #7af9ff 35%, #A78BFA 85%)',
+            backgroundSize: '200% auto',
+            animation: 'textShine 4s linear infinite',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            color: 'transparent',
           }}
         >
           {display || '\u00A0'}
@@ -186,18 +173,17 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
             borderRadius: '2px',
             background: '#00E5FF',
             boxShadow: '0 0 10px #00E5FF',
-            opacity: done ? 0 : cursor ? 1 : 0, // Hides when done so hover scaling looks clean
+            opacity: done ? 0 : cursor ? 1 : 0,
             transition: 'opacity 0.1s',
             verticalAlign: 'middle',
           }}
         />
       </h1>
       
-      {/* Tagline */}
       <p
         className="mt-1 text-sm select-none"
         style={{
-          color: 'var(--muted, #888)', // fallback color if --muted isn't set
+          color: 'var(--muted, #888)',
           opacity: done ? 1 : 0,
           transform: done ? 'translateY(0)' : 'translateY(8px)',
           transition: 'opacity 0.7s ease, transform 0.7s ease',
