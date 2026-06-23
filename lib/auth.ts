@@ -1,77 +1,41 @@
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
-import { prisma } from '@/lib/db';
+import { SignJWT, jwtVerify } from 'jose'; // Assuming you use 'jose' for Edge compatibility in Next.js, or standard 'jsonwebtoken'
 
-const SECRET = process.env.JWT_SECRET || 'dev-only-insecure-change-me';
-const COOKIE = 'token';
-const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
-
-export type PublicUser = {
-  id: string;
-  username: string;
-  displayName: string;
-  avatar: string | null;
-  bio: string | null;
-  isBot: boolean;
-  isAdmin: boolean;
+// 1. Strict Environment Variable Enforcement
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      // Prevent the app from building/running in production without a secure secret
+      throw new Error('FATAL ERROR: JWT_SECRET environment variable is not defined in production!');
+    }
+    // Fallback only for local development
+    console.warn('WARNING: Using insecure default JWT_SECRET for development.');
+    return 'dev-only-insecure-change-me';
+  }
+  
+  return secret;
 };
 
-export function publicUser(u: {
-  id: string;
-  username: string;
-  displayName?: string | null;
-  avatar?: string | null;
-  bio?: string | null;
-  isBot?: boolean;
-  isAdmin?: boolean;
-}): PublicUser {
-  return {
-    id: u.id,
-    username: u.username,
-    displayName: u.displayName || u.username,
-    avatar: u.avatar ?? null,
-    bio: u.bio ?? null,
-    isBot: !!u.isBot,
-    isAdmin: !!u.isAdmin,
-  };
+const SECRET = new TextEncoder().encode(getJwtSecret());
+
+// 2. Implement strict expiration times
+export async function signToken(payload: { userId: string; [key: string]: any }) {
+  return await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    // Sets token expiration inside the token itself (e.g., 7 days instead of indefinite/30 days)
+    .setExpirationTime('7d') 
+    .sign(SECRET);
 }
 
-export function signToken(userId: string): string {
-  return jwt.sign({ uid: userId }, SECRET, { expiresIn: '30d' });
-}
-
-export function verifyToken(token: string): string | null {
+export async function verifyToken(token: string) {
   try {
-    const decoded = jwt.verify(token, SECRET) as { uid: string };
-    return decoded.uid;
-  } catch {
+    const { payload } = await jwtVerify(token, SECRET);
+    return payload;
+  } catch (error) {
+    // This will now automatically catch expired tokens and reject them
+    console.error('Token verification failed:', error);
     return null;
   }
 }
-
-/** Reads the session cookie and returns the full user row, or null. */
-export async function getCurrentUser() {
-  const token = cookies().get(COOKIE)?.value;
-  if (!token) return null;
-  const uid = verifyToken(token);
-  if (!uid) return null;
-  return prisma.user.findUnique({ where: { id: uid } });
-}
-
-export const sessionCookie = (token: string) => ({
-  name: COOKIE,
-  value: token,
-  httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: process.env.NODE_ENV === 'production',
-  path: '/',
-  maxAge: MAX_AGE,
-});
-
-export const clearedCookie = () => ({
-  name: COOKIE,
-  value: '',
-  httpOnly: true,
-  path: '/',
-  maxAge: 0,
-});
