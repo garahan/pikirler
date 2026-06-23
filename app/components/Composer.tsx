@@ -24,6 +24,7 @@ export default function Composer({
 }) {
   const [text, setText] = useState('');
   const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(0);
   const [phase, setPhase] = useState<Phase>('idle');
   const [toast, setToast] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -32,12 +33,29 @@ export default function Composer({
   const pct = Math.min(text.length / MAX, 1);
   const near = remaining <= 40;
 
-  const reset = () => setTimeout(() => { setText(''); setImages([]); setPhase('idle'); }, 200);
+  const reset = () => setTimeout(() => { setText(''); setImages([]); setPhase('idle'); setUploading(0); }, 200);
   const close = () => { onClose(); reset(); };
 
-  const pickImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const pickImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []).slice(0, 4 - images.length);
-    setImages((p) => [...p, ...files.map((f) => URL.createObjectURL(f))].slice(0, 4));
+    if (!files.length) return;
+    setUploading((n) => n + files.length);
+    tap(8);
+    for (const f of files) {
+      try {
+        const fd = new FormData();
+        fd.append('file', f);
+        const r = await fetch('/api/upload', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.url) setImages((p) => [...p, d.url].slice(0, 4));
+      } catch {
+        /* skip failed file */
+      } finally {
+        setUploading((n) => Math.max(0, n - 1));
+      }
+    }
+    if (fileRef.current) fileRef.current.value = '';
+    return;
     tap(8);
   };
 
@@ -82,7 +100,7 @@ export default function Composer({
               className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-ink outline-none placeholder:text-muted"
             />
 
-            {images.length > 0 && (
+            {(images.length > 0 || uploading > 0) && (
               <div className="mt-2 grid grid-cols-4 gap-2">
                 {images.map((src, i) => (
                   <div key={i} className="relative aspect-square overflow-hidden rounded-lg">
@@ -91,12 +109,17 @@ export default function Composer({
                     <button onClick={() => setImages((p) => p.filter((_, j) => j !== i))} className="press absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-xs text-white">✕</button>
                   </div>
                 ))}
+                {Array.from({ length: uploading }).map((_, i) => (
+                  <div key={`u${i}`} className="skeleton grid aspect-square place-items-center rounded-lg">
+                    <span className="animate-ringSpin block h-5 w-5 rounded-full border-2 border-glow/30 border-t-glow" />
+                  </div>
+                ))}
               </div>
             )}
 
             <div className="mt-4 flex items-center justify-between">
-              <button onClick={() => fileRef.current?.click()} disabled={images.length >= 4} className="press flex items-center gap-2 rounded-full border border-edge px-3 py-2 text-sm text-muted hover:text-glow disabled:opacity-40">
-                🖼️ Surat
+              <button onClick={() => fileRef.current?.click()} disabled={images.length + uploading >= 4} className="press flex items-center gap-2 rounded-full border border-edge px-3 py-2 text-sm text-muted hover:text-glow disabled:opacity-40">
+                🖼️ {uploading > 0 ? 'Ýüklenýär…' : 'Surat'}
               </button>
               <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={pickImages} />
 
@@ -109,7 +132,7 @@ export default function Composer({
                   {near && <span className="absolute inset-0 grid place-items-center text-[10px] font-bold text-urgent">{remaining}</span>}
                 </div>
 
-                <button onClick={publish} disabled={!text.trim() || phase !== 'idle'} className="btn-primary press grid h-11 min-w-[7rem] place-items-center rounded-full px-5 disabled:opacity-40">
+                <button onClick={publish} disabled={(!text.trim() && images.length === 0) || phase !== 'idle' || uploading > 0} className="btn-primary press grid h-11 min-w-[7rem] place-items-center rounded-full px-5 disabled:opacity-40">
                   {phase === 'idle' && 'Paýlaş'}
                   {phase === 'sending' && <span className="animate-ringSpin block h-5 w-5 rounded-full border-2 border-midnight/30 border-t-midnight" />}
                   {phase === 'done' && <span className="animate-checkPop text-xl">✓</span>}

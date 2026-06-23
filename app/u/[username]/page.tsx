@@ -95,7 +95,7 @@ function ProfileInner() {
       {posts.length === 0 ? (
         <div className="py-16 text-center"><p className="text-3xl">💭</p><p className="mt-2 text-muted">Heniz pikir ýok.</p></div>
       ) : (
-        <PostList posts={posts} authed={!!me} />
+        <PostList posts={posts} authed={!!me} me={me ? { username: me.username, isAdmin: me.isAdmin } : null} />
       )}
 
       {editing && p.isMe && (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import PostCard, { type Post } from './PostCard';
+import PostCard, { type Post, type Me } from './PostCard';
 import TrendingTopics, { type Topic } from './TrendingTopics';
 
 const PAGE = 20;
@@ -24,9 +24,11 @@ function Skeleton() {
 export default function Feed({
   refreshSignal = 0,
   authed = false,
+  me = null,
 }: {
   refreshSignal?: number;
   authed?: boolean;
+  me?: Me;
 }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -125,7 +127,7 @@ export default function Feed({
 
       <div>
         {visible.map((p, i) => (
-          <PostCard key={p.id} post={p} index={i} authed={authed} />
+          <PostCard key={p.id} post={p} index={i} authed={authed} me={me} />
         ))}
 
         {loading && posts.length === 0 && (<><Skeleton /><Skeleton /><Skeleton /></>)}

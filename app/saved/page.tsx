@@ -15,7 +15,7 @@ function SavedInner() {
   return (
     <>
       {loaded && posts.length === 0 && <div className="py-20 text-center"><p className="text-4xl">📌</p><p className="mt-3 font-semibold text-ink">Saklanan pikir ýok</p><p className="mt-1 text-sm text-muted">Halan pikirleriňi sakla.</p></div>}
-      <PostList posts={posts} authed={!!user} />
+      <PostList posts={posts} authed={!!user} me={user ? { username: user.username, isAdmin: user.isAdmin } : null} />
     </>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkle } from '@/app/components/icons';
+import TypedLogo from '@/app/components/TypedLogo';
 import AvatarPicker from '@/app/components/AvatarPicker';
 
 type Mode = 'login' | 'register';
@@ -55,8 +56,7 @@ export default function LoginPage() {
           <div className="animate-floaty mb-2 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-grad-primary text-midnight shadow-glowSoft">
             <Sparkle size={26} />
           </div>
-          <h1 className="brand text-3xl">Pikirler</h1>
-          <p className="mt-1 text-sm text-muted">Pikirleriň dünýäsine hoş geldiň.</p>
+          <TypedLogo />
         </div>
 
         <div className="rounded-3xl border border-edge bg-card p-6">

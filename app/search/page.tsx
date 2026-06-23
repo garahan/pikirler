@@ -37,7 +37,7 @@ function SearchInner() {
       </div>
       {loading && <p className="py-6 text-center text-sm text-muted"><span className="animate-radar inline-block">⚡</span></p>}
       {users.length > 0 && <div className="border-b border-edge"><p className="px-4 pt-3 text-xs font-semibold uppercase tracking-wide text-muted">Adamlar</p>{users.map((u) => <UserRow key={u.username} user={u} />)}</div>}
-      {posts.length > 0 && <PostList posts={posts} authed={!!user} />}
+      {posts.length > 0 && <PostList posts={posts} authed={!!user} me={user ? { username: user.username, isAdmin: user.isAdmin } : null} />}
       {!loading && q.trim() && users.length === 0 && posts.length === 0 && (
         <div className="py-20 text-center"><p className="text-4xl">🔎</p><p className="mt-3 text-muted">Hiç zat tapylmady.</p></div>
       )}
