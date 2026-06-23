@@ -19,7 +19,7 @@ function SearchInner() {
       if (!q.trim()) { setUsers([]); setPosts([]); return; }
       setLoading(true);
       try {
-        const r = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        const r = await fetch(`/api/content?action=search&q=${encodeURIComponent(q)}`);
         const d = await r.json();
         setUsers(d.users ?? []); setPosts(d.posts ?? []);
       } finally { setLoading(false); }

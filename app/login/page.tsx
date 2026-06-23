@@ -39,7 +39,7 @@ export default function LoginPage() {
     setError('');
     setBusy(true);
     try {
-      const res = await fetch(`/api/auth/${mode}`, {
+      const res = await fetch(`/api/auth?action=${mode}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(

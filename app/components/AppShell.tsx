@@ -14,11 +14,11 @@ export default function AppShell({ header, children }: { header?: React.ReactNod
   const [open, setOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const reloadUser = () => { fetch('/api/auth/me').then((r) => r.json()).then((d) => setUser(d.user)).catch(() => {}); };
+  const reloadUser = () => { fetch('/api/auth').then((r) => r.json()).then((d) => setUser(d.user)).catch(() => {}); };
   useEffect(reloadUser, []);
 
   const newThread = () => { if (!user) { window.location.href = '/login'; return; } setOpen(true); };
-  const logout = async () => { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/login'; };
+  const logout = async () => { await fetch('/api/auth?action=logout', { method: 'POST' }); window.location.href = '/login'; };
 
   return (
     <Ctx.Provider value={{ user, refreshKey, openComposer: newThread, reloadUser }}>

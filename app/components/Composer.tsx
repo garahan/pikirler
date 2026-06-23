@@ -65,7 +65,7 @@ export default function Composer({
     setPhase('sending');
     tap(14);
     try {
-      const res = await fetch('/api/post', {
+      const res = await fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text.trim(), images }),

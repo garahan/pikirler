@@ -10,7 +10,7 @@ function SavedInner() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    fetch('/api/saved').then((r) => r.json()).then((d) => setPosts(d.posts ?? [])).finally(() => setLoaded(true));
+    fetch('/api/content?action=saved').then((r) => r.json()).then((d) => setPosts(d.posts ?? [])).finally(() => setLoaded(true));
   }, []);
   return (
     <>

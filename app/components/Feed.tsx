@@ -47,7 +47,7 @@ export default function Feed({
       try {
         const params = new URLSearchParams({ take: String(PAGE) });
         if (!reset && cursor) params.set('cursor', cursor);
-        const res = await fetch(`/api/feed?${params}`);
+        const res = await fetch(`/api/content?action=feed&${params}`);
         const data: { posts: Post[]; nextCursor: string | null } = await res.json();
         const incoming = data.posts ?? [];
         setPosts((prev) => (reset ? incoming : [...prev, ...incoming]));

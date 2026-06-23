@@ -28,7 +28,7 @@ function ProfileInner() {
   const [followers, setFollowers] = useState(0);
 
   const load = useCallback(() => {
-    fetch(`/api/profile/${username}`).then((r) => r.json()).then((d) => {
+    fetch(`/api/profile?username=${username}`).then((r) => r.json()).then((d) => {
       if (d.user) { setP(d.user); setPosts(d.posts ?? []); setFollowing(d.user.isFollowing); setFollowers(d.user.followerCount); }
     }).finally(() => setLoaded(true));
   }, [username]);
@@ -38,7 +38,7 @@ function ProfileInner() {
     if (!me) { router.push('/login'); return; }
     const next = !following;
     setFollowing(next); setFollowers((c) => c + (next ? 1 : -1));
-    try { await fetch('/api/follow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) }); }
+    try { await fetch('/api/interactions?action=follow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) }); }
     catch { setFollowing(!next); setFollowers((c) => c + (next ? -1 : 1)); }
   };
 

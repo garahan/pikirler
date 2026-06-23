@@ -63,16 +63,16 @@ export default function PostCard({ post, index = 0, authed = false, me = null }:
     setLiked(next); setLikeCount((c) => c + (next ? 1 : -1)); setPopKey((k) => k + 1);
     if (next) { fireBurst(); tap(16); } else tap(8);
     if (inFlight.current) return; inFlight.current = true;
-    try { await hit('/api/like'); } catch { setLiked(!next); setLikeCount((c) => c + (next ? -1 : 1)); } finally { inFlight.current = false; }
+    try { await hit('/api/interactions?action=like'); } catch { setLiked(!next); setLikeCount((c) => c + (next ? -1 : 1)); } finally { inFlight.current = false; }
   };
   const toggleRepost = async () => {
     if (!gate()) return; const next = !reposted;
     setReposted(next); setRepostCount((c) => c + (next ? 1 : -1)); tap(12);
-    try { await hit('/api/repost'); } catch { setReposted(!next); setRepostCount((c) => c + (next ? -1 : 1)); }
+    try { await hit('/api/interactions?action=repost'); } catch { setReposted(!next); setRepostCount((c) => c + (next ? -1 : 1)); }
   };
   const toggleSave = async () => {
     if (!gate()) return; const next = !saved; setSaved(next); tap(12);
-    try { await hit('/api/save'); } catch { setSaved(!next); }
+    try { await hit('/api/interactions?action=save'); } catch { setSaved(!next); }
   };
   const share = async () => {
     tap(8);
@@ -82,13 +82,13 @@ export default function PostCard({ post, index = 0, authed = false, me = null }:
   };
   const remove = async () => {
     setMenu(false); setDeleted(true); tap(14);
-    try { await fetch(`/api/post/${post.id}`, { method: 'DELETE' }); } catch { setDeleted(false); }
+    try { await fetch(`/api/content?id=${post.id}`, { method: 'DELETE' }); } catch { setDeleted(false); }
   };
   const sendReply = async () => {
     if (!gate()) return; const text = replyText.trim(); if (!text) return;
     setReplies((r) => [{ id: `tmp-${Date.now()}`, text, user: { username: 'sen', displayName: 'Sen' } }, ...r].slice(0, 3));
     setReplyCount((c) => c + 1); setReplyText(''); setShowReply(false); tap(12);
-    try { await fetch('/api/reply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ postId: post.id, text }) }); } catch { setReplyCount((c) => c - 1); }
+    try { await fetch('/api/interactions?action=reply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ postId: post.id, text }) }); } catch { setReplyCount((c) => c - 1); }
   };
 
   const doubleLike = () => {
