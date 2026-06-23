@@ -1,0 +1,22 @@
+[build]
+  command = "npx prisma generate && npx prisma db push && npx prisma db seed || true && npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Netlify Scheduled Functions — replaces Vercel cron jobs
+# These call your existing /api/cron route with the CRON_SECRET env var.
+# Set CRON_SECRET in Netlify dashboard → Environment Variables.
+#
+# Schedule syntax: cron("minute hour dom month dow")
+# gemini-bot: every 2 hours
+# news:       every 3 hours
+# scheduler:  every 30 minutes
+
+[functions]
+  directory = "netlify/functions"
