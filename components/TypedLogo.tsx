@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 
 // Words that feel like "brainstorming" — similar vibe to Pikirler (Turkmen for "thoughts/ideas")
@@ -20,7 +21,6 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
   useEffect(() => {
     let cancelled = false;
     const FINAL = 'PIKIRLER';
-
     const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
     const typeWord = async (word: string, deleteAfter: boolean) => {
@@ -67,10 +67,10 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
 
   return (
     <div className="text-center">
-      <h1 className="relative inline-flex items-center text-4xl font-extrabold tracking-[0.14em]">
-        <span className="brand relative inline-flex">
+      <h1 className="relative inline-flex items-center text-4xl font-extrabold tracking-[0.14em] text-white">
+        <span className="brand relative inline-flex text-white">
           {display.split('').map((ch, i) => (
-            <span key={i} className="letter">{ch}</span>
+            <span key={i} className="letter text-white">{ch}</span>
           ))}
           {done && <span className="sheen" aria-hidden />}
         </span>
