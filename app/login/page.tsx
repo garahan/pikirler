@@ -113,7 +113,7 @@ export default function LoginPage() {
               {celebrate && (
                 <span className="pointer-events-none absolute left-1/2 top-1/2">
                   {burst().map((c) => (
-                    <span key={c.id} className="confetti" style={{ background: c.color, '--cx': c.cx, '--cy': c.cy, '--cr': c.cr }} />
+                    <span key={c.id} className="confetti" style={{ background: c.color, '--cx': c.cx, '--cy': c.cy, '--cr': c.cr } as React.CSSProperties} />
                   ))}
                 </span>
               )}

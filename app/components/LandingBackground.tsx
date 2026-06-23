@@ -19,7 +19,7 @@ export default function LandingBackground() {
       <div className="aurora-b absolute -right-1/4 top-0 h-[55vh] w-[55vh] rounded-full bg-accent/20 blur-[90px]" />
       <div className="aurora-c absolute bottom-0 left-1/3 h-[50vh] w-[50vh] rounded-full bg-rose/15 blur-[100px]" />
       {sparks.map((s, i) => (
-        <span key={i} className="spark" style={{ left: s.left, top: s.top, width: s.size, height: s.size, '--dur': s.dur, '--delay': s.delay, '--dx': s.dx }} />
+        <span key={i} className="spark" style={{ left: s.left, top: s.top, width: s.size, height: s.size, '--dur': s.dur, '--delay': s.delay, '--dx': s.dx } as React.CSSProperties} />
       ))}
     </div>
   );

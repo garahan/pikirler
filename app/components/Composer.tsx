@@ -143,7 +143,7 @@ export default function Composer({
                   <span className="pointer-events-none absolute left-1/2 top-1/2">
                     {Array.from({ length: 16 }).map((_, i) => {
                       const a = (Math.PI * 2 * i) / 16; const dist = 50 + Math.random() * 40;
-                      return <span key={i} className="confetti" style={{ background: CONFETTI[i % CONFETTI.length], '--cx': `${Math.cos(a) * dist}px`, '--cy': `${Math.sin(a) * dist}px`, '--cr': `${Math.random() * 360}deg` }} />;
+                      return <span key={i} className="confetti" style={{ background: CONFETTI[i % CONFETTI.length], '--cx': `${Math.cos(a) * dist}px`, '--cy': `${Math.sin(a) * dist}px`, '--cr': `${Math.random() * 360}deg` } as React.CSSProperties} />;
                     })}
                   </span>
                 )}
