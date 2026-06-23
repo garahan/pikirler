@@ -10,7 +10,8 @@ module.exports = {
         card: '#161C24',
         glow: '#00E5FF',     // primary — cyan
         accent: '#A78BFA',   // violet — highlights/brand gradient
-        rose: '#FF4D8D',     // hot pink — accents
+        rose: '#FF4D8D',
+        pink: '#FF4D8D',     // hot pink — accents
         urgent: '#FFB800',   // amber — saved/urgency
         ink: '#F1F5F9',
         muted: '#8896AB',
