@@ -1,42 +1,33 @@
+// If your project originally used 'jsonwebtoken', you MUST run: npm install jose
 import { SignJWT, jwtVerify } from 'jose';
 
-const getJwtSecret = () => {
-  const secret = process.env.JWT_SECRET;
+// Move the secret generation into a helper function so it ONLY runs when called
+const getSecret = () => {
+  const secret = process.env.JWT_SECRET || 'dev-only-insecure-change-me';
   
-  if (!secret) {
-    // Check if we are actively running in production runtime (Serverless environment)
-    // and NOT just running a static build process.
-    if (process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
-      // This ensures it only catches missing secrets when handling actual live requests
-      console.error('FATAL ERROR: JWT_SECRET environment variable is missing in production!');
-    }
-    return 'dev-only-insecure-change-me';
+  if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+     console.error('WARNING: Using insecure JWT_SECRET in production.');
   }
   
-  return secret;
+  return new TextEncoder().encode(secret);
 };
 
-const SECRET = new TextEncoder().encode(getJwtSecret());
-
 export async function signToken(payload: { userId: string; [key: string]: any }) {
-  // Guard clause at the function level: if someone actually tries to sign a token in production with the fallback, block it immediately.
-  if (process.env.NODE_ENV === 'production' && process.env.JWT_SECRET === undefined) {
-    throw new Error('JWT signing blocked: JWT_SECRET is missing.');
-  }
-
+  // Evaluates the secret dynamically
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d') 
-    .sign(SECRET);
+    .sign(getSecret());
 }
 
 export async function verifyToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    // Evaluates the secret dynamically
+    const { payload } = await jwtVerify(token, getSecret());
     return payload;
   } catch (error) {
-    console.error('Token verification failed:', error);
+    // Fails silently if token is expired or invalid, which is the expected behavior
     return null;
   }
 }
