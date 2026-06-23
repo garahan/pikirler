@@ -12,7 +12,8 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
 
   useEffect(() => {
     cancelled.current = false;
-    const FINAL = 'PIKIRLER';
+    // Dynamically grab the last word from the array
+    const FINAL_WORD = WORDS[WORDS.length - 1]; 
     const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
     const typeWord = async (word: string, deleteAfter: boolean) => {
@@ -32,11 +33,13 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
     };
 
     const run = async () => {
+      // Loop through all words EXCEPT the last one
       for (let w = 0; w < WORDS.length - 1; w++) {
         await typeWord(WORDS[w], true);
         if (cancelled.current) return;
       }
-      await typeWord(FINAL, false);
+      // Type the final word and leave it
+      await typeWord(FINAL_WORD, false);
       if (!cancelled.current) setDone(true);
     };
 
@@ -53,8 +56,12 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
   return (
     <div className="text-center">
       <h1 className="relative inline-flex items-center gap-[2px]">
-        {/* gradient text via inline style — bypasses .brand color:transparent issue */}
+        {/* Screen-reader only text for accessibility */}
+        <span className="sr-only">{WORDS[WORDS.length - 1]}</span>
+        
+        {/* Animated text hidden from screen readers */}
         <span
+          aria-hidden="true"
           style={{
             fontWeight: 800,
             letterSpacing: '-0.04em',
@@ -70,8 +77,10 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
         >
           {display || '\u00A0'}
         </span>
-        {/* blinking cursor */}
+        
+        {/* Blinking cursor */}
         <span
+          aria-hidden="true"
           style={{
             display: 'inline-block',
             width: '3px',
