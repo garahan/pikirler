@@ -2,16 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-// Words that feel like "brainstorming" — similar vibe to Pikirler (Turkmen for "thoughts/ideas")
-const WORDS = [
-  'PIKIRLER',
-  'THOUGHTS',
-  'DÜŞÜNJE',
-  'PIKIRLER',
-  'IDËÝA',
-  'OÝLANMA',
-  'PIKIRLER',
-];
+const WORDS = ['PIKIRLER', 'THOUGHTS', 'DÜŞÜNJE', 'PIKIRLER', 'IDËÝA', 'OÝLANMA', 'PIKIRLER'];
 
 export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagline?: string }) {
   const [display, setDisplay] = useState('');
@@ -24,7 +15,6 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
     const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
     const typeWord = async (word: string, deleteAfter: boolean) => {
-      // type in
       for (let i = 1; i <= word.length; i++) {
         if (cancelled) return;
         setDisplay(word.slice(0, i));
@@ -32,7 +22,6 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
       }
       if (!deleteAfter) return;
       await sleep(320);
-      // delete
       for (let i = word.length - 1; i >= 0; i--) {
         if (cancelled) return;
         setDisplay(word.slice(0, i));
@@ -42,23 +31,18 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
     };
 
     const run = async () => {
-      // type all brainstorm words except the last
       for (let w = 0; w < WORDS.length - 1; w++) {
         await typeWord(WORDS[w], true);
         if (cancelled) return;
       }
-      // final: type PIKIRLER and stay
       await typeWord(FINAL, false);
-      if (!cancelled) {
-        setDone(true);
-      }
+      if (!cancelled) setDone(true);
     };
 
     run();
     return () => { cancelled = true; };
   }, []);
 
-  // blinking cursor before done
   useEffect(() => {
     if (done) return;
     const id = setInterval(() => setCursor((c) => !c), 530);
@@ -66,20 +50,53 @@ export default function TypedLogo({ tagline = 'Pikirleriň dünýäsi' }: { tagl
   }, [done]);
 
   return (
-    <div className="text-center">
-      <h1 className="relative inline-flex items-center text-4xl font-extrabold tracking-[0.14em] text-white">
-        <span className="brand relative inline-flex text-white">
-          {display.split('').map((ch, i) => (
-            <span key={i} className="letter text-white">{ch}</span>
-          ))}
-          {done && <span className="sheen" aria-hidden />}
+    <div style={{ textAlign: 'center' }}>
+      <h1
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          fontSize: '2.25rem',
+          fontWeight: 800,
+          letterSpacing: '0.14em',
+          color: '#ffffff',
+          background: 'none',
+          WebkitTextFillColor: '#ffffff',
+        }}
+      >
+        <span
+          style={{
+            display: 'inline-flex',
+            color: '#ffffff',
+            WebkitTextFillColor: '#ffffff',
+            minWidth: '8ch',
+          }}
+        >
+          {display}
         </span>
         <span
-          className={`ml-1 inline-block h-9 w-[3px] rounded bg-glow ${done ? 'animate-glowPulse' : cursor ? 'opacity-100' : 'opacity-0'}`}
-          style={{ boxShadow: '0 0 10px var(--glow)', transition: done ? '' : 'opacity 0.1s' }}
+          style={{
+            display: 'inline-block',
+            width: '3px',
+            height: '2.25rem',
+            borderRadius: '2px',
+            background: '#00e5ff',
+            marginLeft: '2px',
+            boxShadow: '0 0 10px #00e5ff',
+            opacity: done ? 1 : cursor ? 1 : 0,
+            transition: done ? '' : 'opacity 0.1s',
+          }}
         />
       </h1>
-      <p className={`mt-3 text-sm text-muted transition-all duration-700 ${done ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
+      <p
+        style={{
+          marginTop: '0.75rem',
+          fontSize: '0.875rem',
+          color: 'rgba(255,255,255,0.5)',
+          opacity: done ? 1 : 0,
+          transform: done ? 'translateY(0)' : 'translateY(8px)',
+          transition: 'all 0.7s',
+        }}
+      >
         {tagline}
       </p>
     </div>
