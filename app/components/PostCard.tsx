@@ -42,6 +42,7 @@ export default function PostCard({ post, index = 0, authed = false, me = null }:
   const [menu, setMenu] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const [badImg, setBadImg] = useState<Set<number>>(new Set());
+  const [heartFx, setHeartFx] = useState(false);
   const inFlight = useRef(false);
 
   const canDelete = !!me && (me.username === post.user.username || me.isAdmin);
@@ -90,6 +91,13 @@ export default function PostCard({ post, index = 0, authed = false, me = null }:
     try { await fetch('/api/reply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ postId: post.id, text }) }); } catch { setReplyCount((c) => c - 1); }
   };
 
+  const doubleLike = () => {
+    if (!authed) { router.push('/login'); return; }
+    if (!liked) toggleLike();
+    setHeartFx(true);
+    setTimeout(() => setHeartFx(false), 850);
+  };
+
   if (deleted) return null;
   const avatar = post.user.avatar || fallback(post.user.username);
   const name = post.user.displayName || post.user.username;
@@ -97,13 +105,13 @@ export default function PostCard({ post, index = 0, authed = false, me = null }:
   const goodImages = post.images.filter((_, i) => !badImg.has(i));
 
   return (
-    <article className="animate-slideUp border-b border-edge px-4 py-2.5 transition-colors hover:bg-white/[0.015]" style={{ animationDelay: `${Math.min(index, 8) * 30}ms` }}>
+    <article className="animate-slideUp relative border-b border-edge px-4 py-2.5 transition-colors hover:bg-white/[0.015]" style={{ animationDelay: `${Math.min(index, 8) * 30}ms` }}>
       <div className="flex gap-2.5">
         <button onClick={goProfile} className="press shrink-0 ring-grad self-start" aria-label={name}>
           <Image src={avatar} alt={name} width={38} height={38} className="h-[38px] w-[38px] rounded-full bg-card" unoptimized />
         </button>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1" onDoubleClick={doubleLike}>
           <div className="flex items-center gap-1.5">
             <button onClick={goProfile} className="truncate text-[14px] font-semibold text-ink hover:underline">{name}</button>
             {post.user.isAdmin && <span className="rounded-full bg-glow/15 px-1.5 py-px text-[9px] font-bold text-glow">admin</span>}
@@ -183,6 +191,9 @@ export default function PostCard({ post, index = 0, authed = false, me = null }:
           )}
         </div>
       </div>
+      {heartFx && (
+        <span className="heart-pop"><HeartFill size={88} /></span>
+      )}
     </article>
   );
 }

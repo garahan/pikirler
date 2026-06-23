@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { Sparkle } from './icons';
 
 const MAX = 500;
+const CONFETTI = ['#00E5FF', '#A78BFA', '#FF4D8D', '#FFB800', '#34D399'];
 
 function tap(ms = 12) {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
@@ -132,11 +133,21 @@ export default function Composer({
                   {near && <span className="absolute inset-0 grid place-items-center text-[10px] font-bold text-urgent">{remaining}</span>}
                 </div>
 
+                <div className="relative">
                 <button onClick={publish} disabled={(!text.trim() && images.length === 0) || phase !== 'idle' || uploading > 0} className="btn-primary press grid h-11 min-w-[7rem] place-items-center rounded-full px-5 disabled:opacity-40">
                   {phase === 'idle' && 'Paýlaş'}
                   {phase === 'sending' && <span className="animate-ringSpin block h-5 w-5 rounded-full border-2 border-midnight/30 border-t-midnight" />}
                   {phase === 'done' && <span className="animate-checkPop text-xl">✓</span>}
                 </button>
+                {phase === 'done' && (
+                  <span className="pointer-events-none absolute left-1/2 top-1/2">
+                    {Array.from({ length: 16 }).map((_, i) => {
+                      const a = (Math.PI * 2 * i) / 16; const dist = 50 + Math.random() * 40;
+                      return <span key={i} className="confetti" style={{ background: CONFETTI[i % CONFETTI.length], '--cx': `${Math.cos(a) * dist}px`, '--cy': `${Math.sin(a) * dist}px`, '--cr': `${Math.random() * 360}deg` }} />;
+                    })}
+                  </span>
+                )}
+                </div>
               </div>
             </div>
           </div>
